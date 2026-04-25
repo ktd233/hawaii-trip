@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Hawaii Trip Planner</title>
+  <style>
+    :root {
+      --bg: #f7fafc;
+      --card: #ffffff;
+      --text: #17202a;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --danger: #b91c1c;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(247,250,252,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 14px 10px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .day-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .day-btn {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .day-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #115e59;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 4px 0 0;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 46px;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .add-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 800;
+    }
+
+    .small-btn {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 10px;
+      padding: 7px 9px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .check-item:first-of-type {
+      border-top: none;
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--accent);
+    }
+
+    .check-text.done {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .hour-row {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .hour-row:first-of-type {
+      border-top: none;
+    }
+
+    .time {
+      font-weight: 800;
+      color: #115e59;
+      padding-top: 10px;
+      font-size: 0.92rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin: 18px 0 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hawaii Trip Planner</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="checklist">Checklist</button>
+      <button class="tab" data-tab="itinerary">Itinerary</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="checklist" class="panel active">
+      <div class="day-nav" id="checklistDays"></div>
+
+      <div class="card">
+        <div class="card-title">
+          <div>
+            <h2 id="checklistTitle">Day 1 Checklist</h2>
+            <p class="hint">Add items, check them off, and they will save on this phone/browser.</p>
+          </div>
+        </div>
+
+        <div class="add-row">
+          <input id="newItem" placeholder="Add checklist item..." />
+          <button class="primary" id="addItem">Add</button>
+        </div>
+
+        <div id="checklistItems"></div>
+
+        <div class="toolbar">
+          <button class="small-btn" id="clearChecked">Clear checked</button>
+          <button class="small-btn danger" id="clearDayChecklist">Clear this day</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="itinerary" class="panel">
+      <div class="day-nav" id="itineraryDays"></div>
+
+      <div class="card">
+        <div class="card-title">
+          <div>
+            <h2 id="itineraryTitle">Day 1 Itinerary</h2>
+            <p class="hint">Type into each hour. Everything saves automatically.</p>
+          </div>
+        </div>
+
+        <div id="hourBlocks"></div>
+
+        <div class="toolbar">
+          <button class="small-btn danger" id="clearDayItinerary">Clear this day</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Data is stored locally on your device. It does not sync across devices.</p>
+  </main>
+
+  <script>
+    const DAYS = [
+      "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"
+    ];
+
+    const HOURS = [
+      "6 AM", "7 AM", "8 AM", "9 AM", "10 AM", "11 AM",
+      "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM",
+      "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM"
+    ];
+
+    const STORAGE_KEY = "hawaii_trip_planner_v1";
+
+    let state = loadState();
+    let activeTab = "checklist";
+    let checklistDay = 0;
+    let itineraryDay = 0;
+
+    function defaultState() {
+      return {
+        checklist: DAYS.map(() => []),
+        itinerary: DAYS.map(() => HOURS.map(() => ""))
+      };
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved) return defaultState();
+
+        const base = defaultState();
+        return {
+          checklist: DAYS.map((_, i) => Array.isArray(saved.checklist?.[i]) ? saved.checklist[i] : base.checklist[i]),
+          itinerary: DAYS.map((_, i) => Array.isArray(saved.itinerary?.[i]) ? saved.itinerary[i] : base.itinerary[i])
+        };
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function renderDayButtons(containerId, activeIndex, onClick) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = "";
+      DAYS.forEach((day, index) => {
+        const btn = document.createElement("button");
+        btn.className = "day-btn" + (index === activeIndex ? " active" : "");
+        btn.textContent = day;
+        btn.onclick = () => onClick(index);
+        el.appendChild(btn);
+      });
+    }
+
+    function renderChecklist() {
+      renderDayButtons("checklistDays", checklistDay, (i) => {
+        checklistDay = i;
+        renderChecklist();
+      });
+
+      document.getElementById("checklistTitle").textContent = `${DAYS[checklistDay]} Checklist`;
+
+      const list = document.getElementById("checklistItems");
+      list.innerHTML = "";
+
+      const items = state.checklist[checklistDay];
+
+      if (items.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "hint";
+        empty.textContent = "No checklist items yet.";
+        list.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "check-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = item.done;
+        checkbox.onchange = () => {
+          item.done = checkbox.checked;
+          saveState();
+          renderChecklist();
+        };
+
+        const text = document.createElement("input");
+        text.value = item.text;
+        text.className = "check-text" + (item.done ? " done" : "");
+        text.oninput = () => {
+          item.text = text.value;
+          saveState();
+        };
+
+        const del = document.createElement("button");
+        del.className = "small-btn danger";
+        del.textContent = "Delete";
+        del.onclick = () => {
+          state.checklist[checklistDay].splice(index, 1);
+          saveState();
+          renderChecklist();
+        };
+
+        row.appendChild(checkbox);
+        row.appendChild(text);
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+    }
+
+    function renderItinerary() {
+      renderDayButtons("itineraryDays", itineraryDay, (i) => {
+        itineraryDay = i;
+        renderItinerary();
+      });
+
+      document.getElementById("itineraryTitle").textContent = `${DAYS[itineraryDay]} Itinerary`;
+
+      const blocks = document.getElementById("hourBlocks");
+      blocks.innerHTML = "";
+
+      HOURS.forEach((hour, index) => {
+        const row = document.createElement("div");
+        row.className = "hour-row";
+
+        const time = document.createElement("div");
+        time.className = "time";
+        time.textContent = hour;
+
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "Type plan...";
+        textarea.value = state.itinerary[itineraryDay][index] || "";
+        textarea.oninput = () => {
+          state.itinerary[itineraryDay][index] = textarea.value;
+          saveState();
+        };
+
+        row.appendChild(time);
+        row.appendChild(textarea);
+        blocks.appendChild(row);
+      });
+    }
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeTab = btn.dataset.tab;
+
+        document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        document.getElementById(activeTab).classList.add("active");
+      });
+    });
+
+    document.getElementById("addItem").onclick = () => {
+      const input = document.getElementById("newItem");
+      const text = input.value.trim();
+      if (!text) return;
+
+      state.checklist[checklistDay].push({ text, done: false });
+      input.value = "";
+      saveState();
+      renderChecklist();
+    };
+
+    document.getElementById("newItem").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("addItem").click();
+    });
+
+    document.getElementById("clearChecked").onclick = () => {
+      state.checklist[checklistDay] = state.checklist[checklistDay].filter(item => !item.done);
+      saveState();
+      renderChecklist();
+    };
+
+    document.getElementById("clearDayChecklist").onclick = () => {
+      if (!confirm("Clear checklist for this day?")) return;
+      state.checklist[checklistDay] = [];
+      saveState();
+      renderChecklist();
+    };
+
+    document.getElementById("clearDayItinerary").onclick = () => {
+      if (!confirm("Clear itinerary for this day?")) return;
+      state.itinerary[itineraryDay] = HOURS.map(() => "");
+      saveState();
+      renderItinerary();
+    };
+
+    renderChecklist();
+    renderItinerary();
+  </script>
+</body>
+</html>
